@@ -466,6 +466,9 @@ pub const Action = union(enum) {
     ///
     crash: CrashThread,
 
+    /// Bring all ghostty windows in front of all other windows.
+    bring_all_to_front: void,
+
     pub const Key = @typeInfo(Action).Union.tag_type.?;
 
     pub const CrashThread = enum {
@@ -702,6 +705,7 @@ pub const Action = union(enum) {
             .quit,
             .toggle_quick_terminal,
             .toggle_visibility,
+            .bring_all_to_front,
             => .app,
 
             // These are app but can be special-cased in a surface context.

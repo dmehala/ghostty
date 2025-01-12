@@ -237,6 +237,7 @@ pub const App = struct {
             .color_change,
             .pwd,
             .config_change,
+            .bring_all_to_front,
             => log.info("unimplemented action={}", .{action}),
         }
     }

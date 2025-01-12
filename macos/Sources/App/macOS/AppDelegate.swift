@@ -41,6 +41,7 @@ class AppDelegate: NSObject,
 
     @IBOutlet private var menuToggleVisibility: NSMenuItem?
     @IBOutlet private var menuToggleFullScreen: NSMenuItem?
+    @IBOutlet private var menuBringAllToFront: NSMenuItem?
     @IBOutlet private var menuZoomSplit: NSMenuItem?
     @IBOutlet private var menuPreviousSplit: NSMenuItem?
     @IBOutlet private var menuNextSplit: NSMenuItem?
@@ -383,6 +384,7 @@ class AppDelegate: NSObject,
         syncMenuShortcut(config, action: "inspector:toggle", menuItem: self.menuTerminalInspector)
 
         syncMenuShortcut(config, action: "toggle_secure_input", menuItem: self.menuSecureInput)
+        syncMenuShortcut(config, action: "bring_all_to_front", menuItem: self.menuBringAllToFront)
 
         // This menu item is NOT synced with the configuration because it disables macOS
         // global fullscreen keyboard shortcut. The shortcut in the Ghostty config will continue
@@ -726,6 +728,16 @@ class AppDelegate: NSObject,
         // ones that we hid.
         self.hiddenWindows.forEach { $0.value?.orderFrontRegardless() }
         self.hiddenWindows = []
+    }
+    
+    @IBAction func bringAllToFront(_ sender: Any) {
+        NSApp.activate(ignoringOtherApps: true)
+        
+        for window in NSApp.windows.filter({ $0.windowController is BaseTerminalController }) {
+            if window.isVisible {
+                window.makeKeyAndOrderFront(nil)
+            }
+        }
     }
 
     private struct DerivedConfig {

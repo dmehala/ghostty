@@ -541,6 +541,9 @@ extension Ghostty {
                 fallthrough
             case GHOSTTY_ACTION_QUIT_TIMER:
                 Ghostty.logger.info("known but unimplemented action action=\(action.tag.rawValue)")
+                
+            case GHOSTTY_ACTION_BRING_ALL_TO_FRONT:
+                bringAllToFront(app, target: target)
 
             default:
                 Ghostty.logger.warning("unknown action action=\(action.tag.rawValue)")
@@ -712,6 +715,15 @@ extension Ghostty {
             guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
             appDelegate.toggleVisibility(self)
         }
+        
+        private static func bringAllToFront(
+            _ app: ghostty_app_t,
+            target: ghostty_target_s
+        ) {
+            guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
+            appDelegate.bringAllToFront(self)
+        }
+
 
         private static func moveTab(
             _ app: ghostty_app_t,
