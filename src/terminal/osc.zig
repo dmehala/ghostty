@@ -181,6 +181,9 @@ pub const Command = union(enum) {
     /// Wait input (OSC 9;5)
     wait_input: void,
 
+    /// Execute "GuiMacro" (OSC 9;6)
+    execute_function: []const u8,
+
     pub const ColorKind = union(enum) {
         palette: u8,
         foreground,
@@ -380,6 +383,7 @@ pub const Parser = struct {
         conemu_progress_state,
         conemu_progress_prevalue,
         conemu_progress_value,
+        conemu_execute_macro,
     };
 
     /// This must be called to clean up any allocated memory.
@@ -819,6 +823,9 @@ pub const Parser = struct {
                     self.command = .{ .wait_input = {} };
                     self.complete = true;
                 },
+                '6' => {
+                    self.state = .conemu_execute_macro;
+                },
 
                 // Todo: parse out other ConEmu operating system commands.
                 // Even if we don't support them we probably don't want
@@ -949,6 +956,17 @@ pub const Parser = struct {
                     self.state = .swallow;
                     self.complete = true;
                 },
+            },
+
+            .conemu_execute_macro => switch (c) {
+                ';' => {
+                    self.command = .{ .execute_function = undefined };
+                    self.temp_state = .{ .str = &self.command.execute_function };
+                    self.buf_start = self.buf_idx;
+                    self.complete = true;
+                    self.prepAllocableString();
+                },
+                else => self.state = .invalid,
             },
 
             .query_fg_color => switch (c) {
@@ -2126,6 +2144,19 @@ test "OSC: OSC9 conemu wait ignores trailing characters" {
 
     const cmd = p.end('\x1b').?;
     try testing.expect(cmd == .wait_input);
+}
+
+test "OSC: OSC9;6 conemu execute function" {
+    const testing = std.testing;
+
+    var p: Parser = .{};
+
+    const input = "9;6;foo";
+    for (input) |ch| p.next(ch);
+
+    const cmd = p.end('\x1b').?;
+    try testing.expect(cmd == .execute_function);
+    try testing.expectEqualStrings("foo", cmd.execute_function);
 }
 
 test "OSC: empty param" {
